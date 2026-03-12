@@ -1,4 +1,4 @@
-package com.example.tubespotter.ui.theme
+package com.katebeavis.tubespotter.ui.theme
 
 import android.app.Activity
 import android.os.Build

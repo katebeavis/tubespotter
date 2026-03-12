@@ -1,4 +1,4 @@
-package com.example.tubespotter
+package com.katebeavis.tubespotter
 
 import org.junit.Test
 

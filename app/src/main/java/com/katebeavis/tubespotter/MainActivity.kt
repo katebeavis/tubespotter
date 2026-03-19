@@ -4,7 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.katebeavis.tubespotter.ui.theme.TubeSpotterTheme
+import com.katebeavis.tubespotter.presentation.stationlist.components.StationListScreen
+import com.katebeavis.tubespotter.presentation.common.theme.TubeSpotterTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,6 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TubeSpotterTheme {
+                StationListScreen()
             }
         }
     }

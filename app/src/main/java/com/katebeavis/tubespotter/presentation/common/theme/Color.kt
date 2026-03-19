@@ -1,4 +1,4 @@
-package com.katebeavis.tubespotter.ui.theme
+package com.katebeavis.tubespotter.presentation.common.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,6 +1,5 @@
-package com.katebeavis.tubespotter.ui.theme
+package com.katebeavis.tubespotter.presentation.common.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

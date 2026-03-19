@@ -1,7 +1,6 @@
 # Phase One Log
 
 ## Built
----
 - Room database with 3 tables, pre-seeded with 272 stations across 11 lines
 - Clean architecture with data → domain → presentation separation
 - Hilt dependency injection wired through the full stack
@@ -10,7 +9,6 @@
 - Unit tests for use cases and ViewModel
 
 ## Android concepts covered
----
 - Gradle version catalogs and dependency management
 - KSP vs KAPT and why ecosystem compatibility matters
 - Room: entities, DAOs, database class, seed callbacks
@@ -21,12 +19,10 @@
 - UnconfinedTestDispatcher for ViewModel tests
 
 ## Verification checklist
----
 - `./gradlew test` - passing
 - Run on emulator - working
 - Kill and restart - data persists
 - `./gradlew lint` - passing
 
 ## Screenshot
----
 <img src="./phase-one.png" width="300"  alt="phase-one-screenshot"/>

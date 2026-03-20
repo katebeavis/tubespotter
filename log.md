@@ -50,4 +50,4 @@
 - Why the same station needs only one DB row with multiple cross-ref entries (correct relational modelling)
 
 ### Screenshot
-<img src="./phase-two.jpg.png" width="300"  alt="phase-two-screenshot"/>
+<img src="./phase-two.jpg" width="300"  alt="phase-two-screenshot"/>

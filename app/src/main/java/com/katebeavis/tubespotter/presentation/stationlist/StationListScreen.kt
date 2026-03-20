@@ -1,5 +1,8 @@
 package com.katebeavis.tubespotter.presentation.stationlist
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,8 +14,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.katebeavis.tubespotter.domain.model.Station
@@ -20,6 +25,7 @@ import com.katebeavis.tubespotter.presentation.stationlist.components.LineFilter
 import com.katebeavis.tubespotter.presentation.stationlist.components.ProgressHeader
 import com.katebeavis.tubespotter.presentation.stationlist.components.StationItem
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListUiAction
+import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListUiSideEffect
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListUiState
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListViewModel
 
@@ -28,6 +34,38 @@ fun StationListScreen(
     viewModel: StationListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+    ) { success ->
+        if (success) {
+            val pending = uiState.pendingPhotoStationId to uiState.pendingPhotoUri
+            if (pending.first != null && pending.second != null) {
+                viewModel.postAction(
+                    StationListUiAction.PhotoCaptured(pending.first!!, pending.second!!)
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is StationListUiSideEffect.LaunchCamera -> {
+                    viewModel.postAction(
+                        StationListUiAction.StorePendingPhoto(effect.stationId, effect.uri)
+                    )
+                    cameraLauncher.launch(Uri.parse(effect.uri))
+                }
+                is StationListUiSideEffect.ShowDeleteConfirmation -> {
+                    viewModel.postAction(
+                        StationListUiAction.DeletePhotoConfirmed(effect.stationId, effect.uri)
+                    )
+                }
+            }
+        }
+    }
 
     StationListContent(
         uiState = uiState,
@@ -36,48 +74,56 @@ fun StationListScreen(
         )},
         onLineSelected = { viewModel.postAction(StationListUiAction.SelectLine(it)) },
         onClearFilter = { viewModel.postAction(StationListUiAction.ClearFilter) },
+        onTakePhoto = { viewModel.postAction(StationListUiAction.TakePhoto(it)) },
+        onDeletePhoto = { stationId, uri -> viewModel.postAction(StationListUiAction.DeletePhoto(stationId, uri)) }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun StationListContent(
-    uiState: StationListUiState,
-    onToggleStation: (Station) -> Unit,
-    onLineSelected: (Int) -> Unit,
-    onClearFilter: () -> Unit,
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("TubeSpotter — ${uiState.visitedCount} / ${uiState.totalCount}") }
-            )
-        }
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            ProgressHeader(
-                visitedCount = uiState.visitedCount,
-                totalCount = uiState.totalCount,
-            )
-            HorizontalDivider()
-            LineFilterChips(
-                lines = uiState.lines,
-                selectedLineId = uiState.selectedLineId,
-                onLineSelected = onLineSelected,
-                onClearFilter = onClearFilter,
-            )
-            HorizontalDivider()
-            LazyColumn {
-                items(
-                    items = uiState.stations,
-                    key = { it.id },
-                ) { station ->
-                    StationItem(
-                        station = station,
-                        onToggle = onToggleStation,
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+        fun StationListContent(
+            uiState: StationListUiState,
+            onToggleStation: (Station) -> Unit,
+            onLineSelected: (Int) -> Unit,
+            onClearFilter: () -> Unit,
+            onTakePhoto: (Int) -> Unit,
+            onDeletePhoto: (Int, String) -> Unit,
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("TubeSpotter") })
+                }
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                ) {
+                    ProgressHeader(
+                        visitedCount = uiState.visitedCount,
+                        totalCount = uiState.totalCount,
                     )
+                    HorizontalDivider()
+                    LineFilterChips(
+                        lines = uiState.lines,
+                        selectedLineId = uiState.selectedLineId,
+                        onLineSelected = onLineSelected,
+                        onClearFilter = onClearFilter,
+                    )
+                    HorizontalDivider()
+                    LazyColumn {
+                        items(
+                            items = uiState.stations,
+                            key = { it.id },
+                        ) { station ->
+                            StationItem(
+                                station = station,
+                                onToggle = onToggleStation,
+                                onTakePhoto = onTakePhoto,
+                                onDeletePhoto = onDeletePhoto,
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-}

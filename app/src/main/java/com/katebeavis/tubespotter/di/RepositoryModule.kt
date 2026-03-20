@@ -1,6 +1,6 @@
 package com.katebeavis.tubespotter.di
 
-import com.katebeavis.tubespotter.domain.repository.StationRepositoryImpl
+import com.katebeavis.tubespotter.data.repository.StationRepositoryImpl
 import com.katebeavis.tubespotter.domain.repository.StationRepository
 import dagger.Binds
 import dagger.Module

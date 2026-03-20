@@ -7,4 +7,9 @@ sealed interface StationListUiAction : UiAction {
     data class ToggleStation(val station: Station) : StationListUiAction
     data class SelectLine(val lineId: Int) : StationListUiAction
     data object ClearFilter : StationListUiAction
+    data class TakePhoto(val stationId: Int) : StationListUiAction
+    data class PhotoCaptured(val stationId: Int, val uri: String) : StationListUiAction
+    data class DeletePhoto(val stationId: Int, val uri: String) : StationListUiAction
+    data class DeletePhotoConfirmed(val stationId: Int, val uri: String) : StationListUiAction
+    data class StorePendingPhoto(val stationId: Int, val uri: String) : StationListUiAction
 }

@@ -7,6 +7,9 @@ import com.katebeavis.tubespotter.domain.usecase.GetAllStationsUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetStationsByLineUseCase
 import com.katebeavis.tubespotter.domain.usecase.ToggleStationVisitedUseCase
 import com.google.common.truth.Truth.assertThat
+import com.katebeavis.tubespotter.data.local.photo.PhotoStorage
+import com.katebeavis.tubespotter.domain.usecase.DeleteStationPhotoUseCase
+import com.katebeavis.tubespotter.domain.usecase.SaveStationPhotoUseCase
 import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,6 +31,9 @@ class StationListViewModelTest {
     private val getStationsByLine = mockk<GetStationsByLineUseCase>()
     private val getAllLines = mockk<GetAllLinesUseCase>()
     private val toggleStationVisited = mockk<ToggleStationVisitedUseCase>()
+    private val saveStationPhoto = mockk<SaveStationPhotoUseCase>()
+    private val deleteStationPhoto = mockk<DeleteStationPhotoUseCase>()
+    private val photoStorage = mockk<PhotoStorage>()
 
     private val stations = listOf(
         Station(id = 1, name = "Waterloo", zone = "1", isVisited = false, visitedAt = null),
@@ -102,5 +108,8 @@ class StationListViewModelTest {
         getStationsByLine = getStationsByLine,
         getAllLines = getAllLines,
         toggleStationVisited = toggleStationVisited,
+        saveStationPhoto = saveStationPhoto,
+        deleteStationPhoto = deleteStationPhoto,
+        photoStorage = photoStorage,
     )
 }

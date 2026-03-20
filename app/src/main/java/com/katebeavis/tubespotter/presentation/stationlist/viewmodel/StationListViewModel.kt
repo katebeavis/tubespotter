@@ -1,9 +1,12 @@
 package com.katebeavis.tubespotter.presentation.stationlist.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.katebeavis.tubespotter.data.local.photo.PhotoStorage
+import com.katebeavis.tubespotter.domain.usecase.DeleteStationPhotoUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetAllLinesUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetAllStationsUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetStationsByLineUseCase
+import com.katebeavis.tubespotter.domain.usecase.SaveStationPhotoUseCase
 import com.katebeavis.tubespotter.domain.usecase.ToggleStationVisitedUseCase
 import com.katebeavis.tubespotter.presentation.common.mvi.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +23,9 @@ class StationListViewModel @Inject constructor(
     private val getStationsByLine: GetStationsByLineUseCase,
     private val getAllLines: GetAllLinesUseCase,
     private val toggleStationVisited: ToggleStationVisitedUseCase,
+    private val saveStationPhoto: SaveStationPhotoUseCase,
+    private val deleteStationPhoto: DeleteStationPhotoUseCase,
+    private val photoStorage: PhotoStorage,
 ) : BaseViewModel<StationListUiState, StationListUiAction, StationListUiSideEffect>(
     initialState = StationListUiState()
 ) {
@@ -34,6 +40,13 @@ class StationListViewModel @Inject constructor(
             is StationListUiAction.ToggleStation -> toggleStation(action.station)
             is StationListUiAction.SelectLine -> selectLine(action.lineId)
             is StationListUiAction.ClearFilter -> clearFilter()
+            is StationListUiAction.TakePhoto -> takePhoto(action.stationId)
+            is StationListUiAction.PhotoCaptured -> onPhotoCaptured(action.stationId, action.uri)
+            is StationListUiAction.DeletePhoto -> onDeletePhoto(action.stationId, action.uri)
+            is StationListUiAction.DeletePhotoConfirmed -> onDeletePhotoConfirmed(action.stationId, action.uri)
+            is StationListUiAction.StorePendingPhoto -> updateState {
+                copy(pendingPhotoStationId = action.stationId, pendingPhotoUri = action.uri)
+            }
         }
     }
 
@@ -74,5 +87,27 @@ class StationListViewModel @Inject constructor(
 
     private fun clearFilter() {
         updateState { copy(selectedLineId = null) }
+    }
+
+    private fun takePhoto(stationId: Int) {
+        viewModelScope.launch {
+            val file = photoStorage.createImageFile()
+            val uri = photoStorage.getUriForFile(file).toString()
+            postSideEffect(StationListUiSideEffect.LaunchCamera(stationId, uri))
+        }
+    }
+
+    private fun onPhotoCaptured(stationId: Int, uri: String) {
+        viewModelScope.launch { saveStationPhoto(stationId, uri) }
+    }
+
+    private fun onDeletePhoto(stationId: Int, uri: String) {
+        viewModelScope.launch {
+            postSideEffect(StationListUiSideEffect.ShowDeleteConfirmation(stationId, uri))
+        }
+    }
+
+    private fun onDeletePhotoConfirmed(stationId: Int, uri: String) {
+        viewModelScope.launch { deleteStationPhoto(stationId, uri) }
     }
 }

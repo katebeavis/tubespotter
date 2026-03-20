@@ -17,14 +17,14 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 
 ## Phases
 
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Station list with check-off (MVP) | ✅ Complete |
-| 2 | Line filtering and progress tracking | ✅ Complete |
-| 3 | Photo capture and storage | Planned |
-| 4 | Station detail screen + Navigation 3 + bottom nav | Planned |
-| 5 | Achievements system | Planned |
-| 6 | Interactive tube map (stretch goal) | Planned |
+| Phase | Feature                                           | Status     |
+|-------|---------------------------------------------------|------------|
+| 1     | Station list with check-off (MVP)                 | ✅ Complete |
+| 2     | Line filtering and progress tracking              | ✅ Complete |
+| 3     | Photo capture and storage                         | ✅ Complete |
+| 4     | Station detail screen + Navigation 3 + bottom nav | Planned    |
+| 5     | Achievements system                               | Planned    |
+| 6     | Interactive tube map (stretch goal)               | Planned    |
 
 ## Logs
 
@@ -34,3 +34,5 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 
 ### Learning log
 - [Phase 1](learning-log.md#phase-1-project-setup--core-architecture)
+- [Phase 2](learning-log.md#phase-2-line-filtering--progress-tracking)
+- [Phase 3](learning-log.md#phase-3-photo-capture--storage)

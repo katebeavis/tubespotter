@@ -22,4 +22,10 @@ interface StationDao {
       ORDER BY stations.name ASC
   """)
     fun getStationsByLineId(lineId: Int): Flow<List<StationEntity>>
+
+    @Query("UPDATE stations SET photoUri = :uri WHERE id = :stationId")
+    suspend fun updatePhotoUri(stationId: Int, uri: String)
+
+    @Query("UPDATE stations SET photoUri = NULL WHERE id = :stationId")
+    suspend fun clearPhotoUri(stationId: Int)
 }

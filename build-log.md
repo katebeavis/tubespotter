@@ -51,3 +51,31 @@
 
 ### Screenshot
 <img src="./phase-two.jpg" width="300"  alt="phase-two-screenshot"/>
+
+## Phase Three
+
+### Built
+- FileProvider declaration in AndroidManifest + `file_paths.xml` config for external storage access
+- `PhotoStorage` class — creates temp files in `getExternalFilesDir("Pictures")`, returns content URIs via FileProvider, deletes files by path
+- `updatePhotoUri` and `clearPhotoUri` DAO queries on `StationDao`
+- `SaveStationPhotoUseCase` and `DeleteStationPhotoUseCase`
+- `photoUri` field added to `Station` domain model and `StationEntity`
+- Two new side effects: `LaunchCamera(stationId, uri)` and `ShowDeleteConfirmation(stationId, uri)`
+- `pendingPhotoStationId` and `pendingPhotoUri` in `StationListUiState` to survive the camera round-trip
+- `TakePhoto`, `PhotoCaptured`, `DeletePhoto`, `DeletePhotoConfirmed`, `StorePendingPhoto` actions added to `StationListUiAction`
+- Camera launcher via `rememberLauncherForActivityResult(TakePicture)` in `StationListScreen`
+- Side effect collection in `LaunchedEffect` — launches camera or shows delete confirmation dialog
+- `AsyncImage` thumbnail in `StationItem` when a photo exists; camera icon when it doesn't; delete icon overlay
+- Unit tests updated for new ViewModel actions
+
+### Android concepts covered
+- `FileProvider` — why apps can't share raw file paths with the camera, and how a content URI grants temporary read/write permission to another app
+- `ActivityResult` API — `rememberLauncherForActivityResult` + `TakePicture` contract as the modern replacement for `onActivityResult`
+- Why `TakePicture` returns only a `Boolean` — the URI must be prepared before launch and stored in state to be usable in the callback
+- Side effects as the correct channel for one-shot platform actions (camera launch) from a ViewModel — never launch an Intent directly from a ViewModel
+- Pending photo state — why the stationId must be held in `UiState` across the camera round-trip and cannot be passed through the callback
+- Coil `AsyncImage` — declarative async image loading with a placeholder/fallback
+- `getExternalFilesDir` — app-private external storage that doesn't require `READ/WRITE_EXTERNAL_STORAGE` permissions
+
+### Screenshot
+<img src="./phase-three.jpg" width="300"  alt="phase-three-screenshot"/>

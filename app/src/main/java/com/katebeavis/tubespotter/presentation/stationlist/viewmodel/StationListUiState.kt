@@ -10,4 +10,6 @@ data class StationListUiState(
     val selectedLineId: Int? = null,
     val visitedCount: Int = 0,
     val totalCount: Int = 0,
+    val pendingPhotoStationId: Int? = null,
+    val pendingPhotoUri: String? = null,
 ) : UiState

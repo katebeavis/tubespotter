@@ -69,6 +69,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.coil)
+    implementation(libs.androidx.compose.material.icons)
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)

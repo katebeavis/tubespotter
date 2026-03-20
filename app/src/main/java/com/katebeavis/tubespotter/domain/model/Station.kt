@@ -6,4 +6,5 @@ data class Station(
     val zone: String,
     val isVisited: Boolean,
     val visitedAt: Long?,
+    val photoUri: String? = null,
 )

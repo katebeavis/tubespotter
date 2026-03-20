@@ -9,4 +9,6 @@ interface StationRepository {
     fun getStationsByLineId(lineId: Int): Flow<List<Station>>
     fun getAllLines(): Flow<List<Line>>
     suspend fun toggleStationVisited(station: Station)
+    suspend fun saveStationPhoto(stationId: Int, uri: String)
+    suspend fun deleteStationPhoto(stationId: Int, uri: String)
 }

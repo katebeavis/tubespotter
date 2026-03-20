@@ -20,7 +20,7 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 | Phase | Feature | Status |
 |-------|---------|--------|
 | 1 | Station list with check-off (MVP) | ✅ Complete |
-| 2 | Line filtering and progress tracking | Planned |
+| 2 | Line filtering and progress tracking | ✅ Complete |
 | 3 | Photo capture and storage | Planned |
 | 4 | Station detail screen + Navigation 3 + bottom nav | Planned |
 | 5 | Achievements system | Planned |
@@ -28,4 +28,4 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 
 ## Phase logs
 
-- [Phase 1](./phase-one-log.md) — Room, Hilt, MVI base, station list
+- [Phase 1](log.md) — Room, Hilt, MVI base, station list

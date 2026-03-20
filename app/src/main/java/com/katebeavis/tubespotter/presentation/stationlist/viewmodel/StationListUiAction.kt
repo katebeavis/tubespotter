@@ -5,4 +5,6 @@ import com.katebeavis.tubespotter.presentation.common.mvi.UiAction
 
 sealed interface StationListUiAction : UiAction {
     data class ToggleStation(val station: Station) : StationListUiAction
+    data class SelectLine(val lineId: Int) : StationListUiAction
+    data object ClearFilter : StationListUiAction
 }

@@ -1,15 +1,18 @@
-package com.katebeavis.tubespotter.data.repository
+package com.katebeavis.tubespotter.domain.repository
 
+import com.katebeavis.tubespotter.data.local.dao.LineDao
 import com.katebeavis.tubespotter.data.local.dao.StationDao
 import com.katebeavis.tubespotter.data.local.entity.StationEntity
+import com.katebeavis.tubespotter.data.local.entity.LineEntity
 import com.katebeavis.tubespotter.domain.model.Station
-import com.katebeavis.tubespotter.domain.repository.StationRepository
+import com.katebeavis.tubespotter.domain.model.Line
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class StationRepositoryImpl @Inject constructor(
     private val stationDao: StationDao,
+    private val lineDao: LineDao,
 ) : StationRepository {
 
     override fun getAllStations(): Flow<List<Station>> =
@@ -20,6 +23,16 @@ class StationRepositoryImpl @Inject constructor(
     override suspend fun toggleStationVisited(station: Station) {
         stationDao.updateStation(station.toEntity())
     }
+
+    override fun getStationsByLineId(lineId: Int): Flow<List<Station>> =
+        stationDao.getStationsByLineId(lineId).map { entities ->
+            entities.map { it.toDomain() }
+        }
+
+    override fun getAllLines(): Flow<List<Line>> =
+        lineDao.getAllLines().map { entities ->
+            entities.map { it.toDomain() }
+        }
 
     private fun StationEntity.toDomain() = Station(
         id = id,
@@ -35,5 +48,12 @@ class StationRepositoryImpl @Inject constructor(
         zone = zone,
         isVisited = isVisited,
         visitedAt = visitedAt,
+    )
+
+    private fun LineEntity.toDomain() = Line(
+        id = id,
+        name = name,
+        colour = colour,
+        displayOrder = displayOrder,
     )
 }

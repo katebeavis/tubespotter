@@ -14,4 +14,12 @@ interface StationDao {
 
     @Update
     suspend fun updateStation(station: StationEntity)
+
+    @Query("""
+      SELECT stations.* FROM stations
+      INNER JOIN station_line_cross_ref ON stations.id = station_line_cross_ref.stationId
+      WHERE station_line_cross_ref.lineId = :lineId
+      ORDER BY stations.name ASC
+  """)
+    fun getStationsByLineId(lineId: Int): Flow<List<StationEntity>>
 }

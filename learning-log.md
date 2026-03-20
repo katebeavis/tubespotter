@@ -102,3 +102,54 @@ The larger the base class grows, the more workarounds become necessary
 His recommended alternative is composition over inheritance — utility functions and extension functions instead of a shared base class. If you genuinely only need state and side effects, those could live in each ViewModel directly rather than being inherited.
 Why we're using it anyway
 TubeSpotter is a single-developer learning project with a fixed small number of screens — none of the failure modes Lackner describes (team coordination problems, growing base class, invisible shared behaviour) apply here. More importantly, the goal is to mirror patterns from a professional Android codebase. Understanding BaseViewModel deeply — including its tradeoffs — is more valuable than avoiding it. The risks are real at scale; the benefits are real at learning scale.
+
+## Phase 2: Line Filtering & Progress Tracking
+
+### What I Learned
+
+### Reactive stream switching with `flatMapLatest`
+
+- `flatMapLatest` is a Flow operator that cancels the previous downstream flow and switches to a new one whenever the upstream emits. In this phase, the upstream was `uiState` and the downstream was either `getAllStations()` or `getStationsByLine(lineId)` depending on the selected filter
+- Without `flatMapLatest`, changing the filter would not switch the data source — the old flow would keep emitting stale data
+- You can think of it like a TV remote switching channels: `flatMapLatest` changes what you're watching and stops receiving the old signal
+- This is preferable to maintaining a separate `MutableStateFlow` for the filter because it keeps a single source of truth — the selected line is already in `UiState`, so we can react to that directly
+
+### Room JOIN queries
+
+- When you need a filtered list from a related table, a raw `@Query` with a SQL JOIN is simpler than Room's `@Relation`/`@Transaction` approach
+- `@Relation` is designed for loading nested object graphs (e.g. a `Line` with its full list of `Station` objects). For a flat filtered list, a JOIN is more direct and easier to reason about
+- The cross-reference table did its thing here — querying stations by line is a single JOIN rather than loading everything and filtering in memory
+
+### Relational data modelling
+
+- The Phase 1 seed data had duplicate station rows (e.g. Paddington appeared three times, once per line). This worked for displaying a list but broke correctness — a visited toggle on one Paddington would not affect the others
+- The correct model is one row per real-world entity with a cross-reference table encoding the many-to-many relationship. This is standard relational database design, not Android-specific
+- Database Inspector in Android Studio (emulator only) was used for diagnosing this — `GROUP BY name HAVING count > 1` immediately surfaced all 47 duplicates
+
+### Material 3 components
+
+- `FilterChip` has a `selected` state that drives its visual appearance — you pass the boolean, Material 3 handles the filled/outlined styling
+- `LazyRow` is the horizontal equivalent of `LazyColumn` — same API, same `key` lambda for stable recomposition
+- `LinearProgressIndicator` takes a `progress` lambda that returns a `Float` between 0 and 1. Using a lambda (rather than a plain Float) tells Compose to skip recomposition of the surrounding layout when only the progress value changes — a small but real performance optimisation
+- TfL line colours are stored as hex strings in the database. Converting to Compose `Color` requires `android.graphics.Color.parseColor()` — this stays in the presentation layer, domain never knows colours as anything other than strings
+
+### What I Struggled With
+
+### Duplicate seed data
+
+- The Phase 1 seed data assigned a new ID to every station-line occurrence rather than modelling the many-to-many relationship correctly. This wasn't visible until filtering revealed that "visited" state was per-occurrence rather than per-station
+- Fixing it required auditing ~270 stations, deduplicating IDs, and rewriting the cross-ref list — a reminder that data modelling decisions made early are expensive to fix later
+- Uninstalling the app from the emulator was the "migration strategy" since this is pre-production — in a shipped app this would require a Room migration with a version bump
+
+### Comparisons to React Native
+
+| Concept                    | React Native                        | Android                            |
+|----------------------------|-------------------------------------|------------------------------------|
+| Reactive stream switching  | `switchMap` in RxJS                 | `flatMapLatest` in Flow            |
+| Horizontal scrollable list | `FlatList` with `horizontal` prop   | `LazyRow`                          |
+| Filter/chip UI             | Third-party libraries or custom     | `FilterChip` built into Material 3 |
+| Progress bar               | Third-party or custom               | `LinearProgressIndicator` built in |
+| Many-to-many data          | Join table in SQL or nested objects | Room cross-reference entity        |
+
+#### Key insight
+Material 3's component library is significantly more complete than what ships with React Native out of the box. Components like `FilterChip` and `LinearProgressIndicator` are production-quality with built-in theming, accessibility, and animation — no third-party dependency needed.

@@ -6,8 +6,8 @@
 
 ### Project structure
 
-- Android projects use libs.versions.toml as a centralised version registry (equivalent to a monorepo root package.json) and build.gradle.kts to actually declare dependencies with implementation, ksp, or testImplementation
-- Multi-module Android projects are conceptually similar to monorepos — each module has its own build.gradle.kts, enforced boundaries, and team ownership. Even though this project is small, it could be built with multiple modules. However, this would over-complicate things when I am trying to learn
+- Android projects use `libs.versions.toml` as a centralised version registry (equivalent to a monorepo root `package.json`) and `build.gradle.kts` to actually declare dependencies with `implementation`, `ksp`, or `testImplementation`
+- Multi-module Android projects are conceptually similar to monorepos — each module has its own `build.gradle.kts`, enforced boundaries, and team ownership. Even though this project is small, it could be built with multiple modules. However, this would over-complicate things when I am trying to learn
 - AGP (Android Gradle Plugin) is what makes Gradle understand how to build Android apps — it handles compiling against the Android SDK, packaging APKs, and managing the manifest
 
 ### Architecture
@@ -21,10 +21,10 @@
 ### MVI pattern
 
 - Model View Intent enforces unidirectional data flow: Action → ViewModel → State → UI → Action
-- UiState is a data class — the single source of truth for what a screen looks like
-- UiAction is a sealed interface — all possible user interactions, exhaustively handled in a when block
-- UiSideEffect is a sealed interface — one-time events like navigation, snackbars, or launching the camera that shouldn't live in state
-- BaseViewModel provides the StateFlow + Channel infrastructure so every screen's ViewModel follows identical plumbing (see below for some more context on this)
+- `UiState` is a data class — the single source of truth for what a screen looks like
+- `UiAction` is a sealed interface — all possible user interactions, exhaustively handled in a when block
+- `UiSideEffect` is a sealed interface — one-time events like navigation, snackbars, or launching the camera that shouldn't live in state
+- `BaseViewModel` provides the StateFlow + Channel infrastructure so every screen's ViewModel follows identical plumbing (see below for some more context on this)
 
 ### Kotlin concepts
 

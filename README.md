@@ -31,6 +31,7 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 ### Build log
 - [Phase 1](build-log.md#phase-one) — Room, Hilt, MVI base, station list
 - [Phase 2](build-log.md#phase-two) — Line filtering, progress tracking, data deduplication
+- [Phase 3](build-log.md#phase-three) — Adding photo capture and storage per station using the camera, FileProvider, and Coil.
 
 ### Learning log
 - [Phase 1](learning-log.md#phase-1-project-setup--core-architecture)

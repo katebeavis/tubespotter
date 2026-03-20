@@ -26,6 +26,7 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 | 5 | Achievements system | Planned |
 | 6 | Interactive tube map (stretch goal) | Planned |
 
-## Phase logs
+## Logs
 
 - [Phase 1](log.md) — Room, Hilt, MVI base, station list
+- [Phase 2](log.md) — Line filtering, progress tracking, data deduplication

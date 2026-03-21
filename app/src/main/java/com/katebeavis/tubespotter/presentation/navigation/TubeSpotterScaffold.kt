@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.katebeavis.tubespotter.presentation.achievements.AchievementsScreen
+import com.katebeavis.tubespotter.presentation.map.TubeMapScreen
 import com.katebeavis.tubespotter.presentation.stationdetail.StationDetailScreen
 import com.katebeavis.tubespotter.presentation.stationlist.StationListScreen
 
@@ -63,6 +64,13 @@ fun TubeSpotterScaffold() {
                 }
                 entry<AchievementsRoute> {
                     AchievementsScreen()
+                }
+                entry<TubeMapRoute> {
+                    TubeMapScreen(
+                        onNavigateToDetail = { stationId ->
+                            backStack.add(StationDetailRoute(stationId))
+                        }
+                    )
                 }
             },
         )

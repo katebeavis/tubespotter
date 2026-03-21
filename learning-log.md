@@ -337,3 +337,65 @@ Assisted injection solves the same problem as passing props to a React component
 
 #### Key insight
 The split between Flow queries (for UI) and suspend queries (for business logic) mirrors the React pattern of separating subscriptions (`useEffect` + websocket) from one-time fetches (`useEffect` with `fetch`). The key question is always: do I need to react to future changes, or do I just need the answer right now?
+
+## Phase 6: Interactive Tube Map
+
+### What I Learned
+
+### Canvas and DrawScope
+
+- `Canvas` is a Compose composable that gives you a `DrawScope` — a surface you can draw primitives onto directly, bypassing the Compose layout system entirely
+- `drawLine`, `drawCircle`, `drawPath` are the core primitives. You specify positions in pixels relative to the canvas top-left
+- Drawing order matters — later draw calls appear on top. Lines are drawn before station dots so dots render on top of the lines
+
+### withTransform vs graphicsLayer
+
+- `graphicsLayer` is a visual-only rendering transform — it moves pixels on screen but doesn't change where Compose thinks the composable is or where touch events land. Zoom/pan with `graphicsLayer` makes things look right but breaks tap detection because the touch areas don't move
+- `withTransform` applies the transform inside the Canvas draw pass — both the visual output and the coordinate space are transformed together. Hit testing then works by inverting the transform to convert a screen tap back to canvas coordinates
+- This was the key insight: keep the transform inside the drawing, not outside it
+
+### Hit testing
+
+- `detectTapGestures` gives you a tap position in the composable's local coordinate space (before any transform)
+- To find which station was tapped, convert the tap to canvas space using the inverse transform: `canvasTapX = (tapX - offsetX - pivotX) / scale + pivotX`
+- Then find the nearest station within a radius — `getDistance()` on the difference between two `Offset` values
+- The `pointerInput` modifier takes key parameters — passing `scale` and `offset` as keys forces it to recompose when the transform changes, so the hit test always uses the current values
+
+### rememberTransformableState
+
+- Handles pinch-to-zoom and drag-to-pan gestures declaratively. The lambda receives `zoomChange` (a multiplier) and `panChange` (an Offset delta) on every gesture frame
+- `scale = (scale * zoomChange).coerceIn(0.5f, 5f)` clamps zoom to sensible limits
+- The state is separate from the Canvas — it just updates `scale` and `offset`, and the Canvas redraws in response
+
+### Coordinate normalisation
+
+- Station positions are stored as values on a 0–1000 grid, independent of screen size
+- At draw time they're scaled to actual pixels: `x = (normalised / 1000f) * canvasWidth`
+- This means the map looks the same on any screen size — the coordinate data doesn't need to change
+
+### zipWithNext
+
+- `listOf(a, b, c, d).zipWithNext()` produces `[(a,b), (b,c), (c,d)]` — adjacent pairs
+- Used to draw line segments between consecutive stations in each route segment. Without it you'd need a manual index loop
+
+### What I Struggled With
+
+### graphicsLayer breaking tap detection
+
+- The initial implementation used `graphicsLayer` for the visual transform and tried to manually adjust tap coordinates. This worked approximately at scale=1 but broke at other zoom levels because `graphicsLayer`'s pivot point (canvas centre) wasn't being correctly accounted for
+- Fix was to remove `graphicsLayer` entirely and use `withTransform` inside the Canvas instead
+
+### Comparisons to React Native
+
+| Concept            | React Native                                                           | Android                                      |
+|--------------------|------------------------------------------------------------------------|----------------------------------------------|
+| Custom drawing     | `react-native-svg` or `react-native-canvas`                            | `Canvas` composable + `DrawScope`            |
+| Zoom/pan gestures  | `react-native-gesture-handler` PanGestureHandler + PinchGestureHandler | `rememberTransformableState`                 |
+| Hit testing        | `onPress` per element                                                  | Manual distance check in `detectTapGestures` |
+| Coordinate systems | Absolute positions in JSX layout                                       | Normalised grid scaled at draw time          |
+
+#### Key insight
+React Native's approach to custom drawing is to use a library (`react-native-svg`, Skia) or position absolute elements. Android's Canvas gives you a lower-level drawing API with no abstraction layer — you're directly issuing draw commands. This is more work but more control, and teaches you how rendering actually works under the hood.
+
+#### Key insight
+`graphicsLayer` vs `withTransform` illustrates a general principle: visual transforms and logical transforms need to be in sync for interaction to work. The same issue exists in React Native when you animate a component with `Animated.View` — the touch area stays at the original position unless you use `useNativeDriver: false` or a layout animation.

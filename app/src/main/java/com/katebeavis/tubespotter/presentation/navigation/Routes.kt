@@ -11,3 +11,6 @@ data class StationDetailRoute(val stationId: Int): NavKey
 
 @Serializable
 data object AchievementsRoute: NavKey
+
+@Serializable
+data object TubeMapRoute : NavKey

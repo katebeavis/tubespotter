@@ -133,3 +133,31 @@
 
 ### Screenshot
 <img src="./phase-five.jpg" width="300"  alt="phase-five-screenshot"/>
+
+## Phase Six
+
+### Built
+- `StationCoordinates.kt` — all 263 stations mapped to approximate Beck diagram positions on a normalised 1000×1000 grid
+- `LineRoutes.kt` — ordered station sequences per line and branch, used to draw connecting paths
+- `StationCoordinate` domain model
+- `MapStation` — pairs a `Station` with its `StationCoordinate`, returned by `GetMapDataUseCase`
+- `GetMapDataUseCase` — joins live station data with coordinate data, emits `List<MapStation>` as a Flow
+- Full map MVI — `TubeMapUiState`, `TubeMapUiAction`, `TubeMapUiSideEffect`, `TubeMapViewModel`
+- `TubeMapScreen` — `Canvas` composable with `withTransform` for zoom/pan, `detectTapGestures` for hit testing
+- `rememberTransformableState` — handles pinch-to-zoom and drag-to-pan, clamped to 0.5×–5× scale
+- Lines drawn as coloured strokes in TfL colours; Northern line drawn with white outline for visibility on dark background
+- Station dots drawn as filled circles (visited = blue) or outlined circles (unvisited = grey)
+- Tapping a station navigates to the detail screen via `NavigateToDetail` side effect
+- `TubeMapRoute` added to navigation, Map tab added to bottom nav
+
+### Android concepts covered
+- `Canvas` composable and `DrawScope` — Android's 2D drawing API; drawing primitives (`drawLine`, `drawCircle`) directly onto a surface without the Compose layout system
+- `withTransform` — applying scale and translation inside a Canvas drawing block so the transform is part of the draw pass, not a separate rendering layer
+- `graphicsLayer` vs `withTransform` — `graphicsLayer` is a visual-only transform and doesn't affect touch coordinates; `withTransform` keeps drawing and hit testing in the same coordinate space
+- `rememberTransformableState` — declarative gesture state for multi-touch zoom and pan
+- Hit testing — converting a screen tap to canvas coordinates via the inverse transform, then finding the nearest station within a radius
+- `pointerInput` key parameters — passing `scale` and `offset` as keys forces the gesture handler to recompose when the transform changes, so hit testing always uses current values
+- `zipWithNext` — Kotlin collection function for iterating adjacent pairs; used to draw line segments between consecutive stations
+
+### Screenshot
+<img src="./phase-six.jpg" width="300"  alt="phase-six-screenshot"/>

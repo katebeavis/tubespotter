@@ -25,6 +25,10 @@ TubeSpotter is also a structured Android learning project — built phase by pha
 | 4     | Station detail screen + Navigation 3 + bottom nav | ✅ Complete |
 | 5     | Achievements system                               | ✅ Complete |
 | 6     | Interactive tube map (stretch goal)               | ✅ Complete |
+| 7     | Dark mode                                         | 🔲 Planned  |
+| 8     | Per-line progress tracking                        | 🔲 Planned  |
+| 9     | Achievement unlock animation                      | 🔲 Planned  |
+| 10    | UI polish                                         | 🔲 Planned  |
 
 ## Logs
 

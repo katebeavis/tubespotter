@@ -464,6 +464,119 @@ Build a programmatic map using Compose Canvas. Define station coordinates manual
 
 ---
 
+## Phase 7: Dark Mode (Stretch Goal)
+
+**Goal:** Full Material 3 dynamic theming with proper light/dark mode support.
+
+**Status: Not Started**
+
+### What You Will Learn
+- Material 3 `ColorScheme` — light and dark variants, surface colours, content colours
+- `dynamicColorScheme` — Android 12+ feature that extracts colours from the user's wallpaper
+- `isSystemInDarkTheme()` — reacting to system dark mode setting in Compose
+- Why hardcoded `Color.Black` and `Color.White` break in dark mode and how to use semantic colour roles instead (`MaterialTheme.colorScheme.surface`, `.onSurface`, etc.)
+
+### Key Work
+- Audit every hardcoded colour in the codebase (map canvas background, station dot colours, line stroke colours) and replace with theme-aware equivalents or explicit dark/light variants
+- Update `TubeSpotterTheme` to pass a `darkColorScheme` when `isSystemInDarkTheme()` is true
+- The map canvas is the trickiest part — Canvas draws outside the Compose theming system so colours must be explicitly passed in from the composable layer
+
+### Definition of Done
+- [ ] App follows system dark/light mode setting automatically
+- [ ] All screens look correct in both modes
+- [ ] Map canvas colours adapt correctly
+- [ ] No hardcoded `Color.Black` or `Color.White` used for UI chrome
+
+---
+
+## Phase 8: Per-Line Progress (Stretch Goal)
+
+**Goal:** Show visited percentage per line in the station list and on the achievements screen. Add a summary view of all lines with progress bars.
+
+**Status: Not Started**
+
+### What You Will Learn
+- Deriving computed state in the repository layer using `combine`
+- `LinearProgressIndicator` with animated progress transitions
+- Extending existing screens with new state without breaking existing behaviour
+
+### Key Work
+- Add `visitedCount` and `totalCount` to the `Line` domain model, populated in `StationRepositoryImpl` by combining line data with station data
+- Update `LineFilterChips` to show a progress fraction on each chip (e.g. "Central 12/49")
+- Update `AchievementsScreen` to show per-line progress bars below each achievement, so locked achievements show how close you are to unlocking them
+- Add an overall network progress card at the top of the station list (total visited across all 263 stations)
+
+### Definition of Done
+- [ ] Each line chip shows visited/total count
+- [ ] Achievements screen shows per-line progress bar for locked achievements
+- [ ] Overall network progress shown on station list
+- [ ] All existing tests still pass
+
+---
+
+## Phase 9: Achievement Unlock Animation (Stretch Goal)
+
+**Goal:** Celebrate when a line achievement is earned with an animated overlay.
+
+**Status: Not Started**
+
+### What You Will Learn
+- `AnimatedVisibility` — enter/exit transitions for composables
+- `Animatable` and `animate*AsState` — driving custom animations from state
+- Triggering a one-shot animation from a `UiSideEffect` — the correct MVI pattern for imperative events
+- `LaunchedEffect` with a key — running an animation coroutine when a specific value changes
+
+### Key Work
+- Add `ShowAchievementUnlocked(lineName: String)` to `StationListUiSideEffect`
+- Emit this from `StationListViewModel` when `CheckLineCompletionUseCase` returns a newly unlocked achievement
+- Build an `AchievementToast` composable that overlays the screen: slides in, holds for 2 seconds, slides out — using `AnimatedVisibility` with custom enter/exit specs
+- Display the TfL line colour and name in the toast
+
+### Definition of Done
+- [ ] Toggling the last station on a line triggers the animation
+- [ ] Animation plays once and dismisses automatically
+- [ ] Animation does not replay on recomposition or screen rotation
+- [ ] Works correctly when multiple lines complete in quick succession
+
+---
+
+## Phase 10: UI Polish (Stretch Goal)
+
+**Goal:** Raise the visual quality of the app to match a production standard.
+
+**Status: Not Started**
+
+### Key Work
+
+**Station list:**
+- Add a `SearchBar` (Material 3) to filter stations by name — teaches `derivedStateOf` for expensive filtered computations
+- Show TfL line colour dots on each `StationItem` so you can see which lines a station is on
+- Add `SwipeToDismiss` on station items to delete a photo without going to the detail screen
+
+**Station detail:**
+- Show the full-size photo with a `zoomable` modifier so it can be pinched to zoom
+- Show which lines the station is on as coloured chips
+- Show the date the station was visited, formatted with `DateTimeFormatter`
+
+**Achievements screen:**
+- Add a summary header: "X / 12 lines complete"
+- Sort achievements — unlocked first, locked last
+- Show the unlock date on completed achievements
+
+**General:**
+- Add `Crossfade` transitions between bottom nav tabs
+- Add `placeholder` shimmer loading states while data is loading (Coil has built-in support)
+- Improve empty states — if no stations are visited, show an encouraging message instead of an empty list
+
+### Definition of Done
+- [ ] Search bar filters station list correctly
+- [ ] Line colours visible on station items
+- [ ] Detail screen shows visit date and line chips
+- [ ] Achievements screen sorted and dated
+- [ ] Tab transitions animated
+
+---
+
 ## Dependencies by Phase
 
 | Phase | New Dependencies |

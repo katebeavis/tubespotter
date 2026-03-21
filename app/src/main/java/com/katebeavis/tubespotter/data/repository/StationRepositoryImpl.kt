@@ -49,6 +49,12 @@ class StationRepositoryImpl @Inject constructor(
     override fun getStationById(stationId: Int): Flow<Station?> =
         stationDao.getStationById(stationId).map { it?.toDomain() }
 
+    override suspend fun getStationsForLineSync(lineId: Int): List<Station> =
+        stationDao.getStationsByLineIdSync(lineId).map { it.toDomain() }
+
+    override suspend fun getLineIdsForStation(stationId: Int): List<Int> =
+        stationDao.getLineIdsForStation(stationId)
+
     private fun StationEntity.toDomain() = Station(
         id = id,
         name = name,

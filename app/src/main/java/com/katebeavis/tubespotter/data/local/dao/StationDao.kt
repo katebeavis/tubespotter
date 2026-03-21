@@ -31,4 +31,10 @@ interface StationDao {
 
     @Query("SELECT * FROM stations WHERE id = :stationId")
     fun getStationById(stationId: Int): Flow<StationEntity?>
+
+    @Query("SELECT stations.* FROM stations INNER JOIN station_line_cross_ref ON stations.id = station_line_cross_ref.stationId WHERE station_line_cross_ref.lineId = :lineId")
+            suspend fun getStationsByLineIdSync(lineId: Int): List<StationEntity>
+
+    @Query("SELECT lineId FROM station_line_cross_ref WHERE stationId = :stationId")
+    suspend fun getLineIdsForStation(stationId: Int): List<Int>
 }

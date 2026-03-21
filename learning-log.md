@@ -285,3 +285,55 @@ Navigation 3's explicit back stack (`backStack.add()`, `backStack.removeLastOrNu
 
 #### Key insight
 Assisted injection solves the same problem as passing props to a React component — giving a piece of UI the context-specific data it needs. The difference is that in Android, the ViewModel is created by a framework (Hilt), not by you, so you need a formal mechanism to inject runtime values into that process.
+
+## Phase 5: Achievements System
+
+### What I Learned
+
+### Room migrations
+
+- When an app is already installed, bumping the database version without providing a migration crashes at startup — Room refuses to wipe user data silently
+- `Migration(from, to)` provides the SQL to upgrade the schema. Room runs it once when it detects the version mismatch on an existing installation
+- New installs skip migrations entirely and go straight to `onCreate` — migrations only run for upgrades
+- The migration SQL mirrors what Room would generate itself — `CREATE TABLE IF NOT EXISTS achievements (...)`
+
+### combine Flow operator
+
+- `combine` merges two or more Flows into a single Flow that re-emits whenever either source changes. Used here to join the achievements stream with the lines stream so `Achievement` domain models can include `lineName` without the entity storing it
+- This keeps the entity lean (just IDs and timestamps) while the domain model is shaped for display — the join happens reactively at the repository level
+
+### One-shot queries vs Flow queries
+
+- Flow queries are live streams — they keep emitting as the database changes and are used for UI observation
+- `suspend` queries returning a `List` are one-shot snapshots — they run once and return. Used in `CheckLineCompletionUseCase` because completion checking needs a point-in-time answer, not a live stream
+- Both are valid patterns; choosing between them depends on whether you need reactivity or a single result
+
+### Business logic ownership
+
+- `CheckLineCompletionUseCase` owns all completion logic: look up the station's lines, check each line, unlock if complete. The ViewModel just calls `checkLineCompletion(stationId)` with no awareness of how it works
+- Moving the line ID lookup into the use case (rather than the ViewModel) kept the ViewModel thin and the logic testable in isolation — a pattern worth repeating
+
+### Interaction-based testing
+
+- Some behaviour can't be verified by checking state — "did the right function get called?" is a valid assertion
+- `coVerify { useCase(args) }` is MockK's equivalent of Jest's `expect(mockFn).toHaveBeenCalledWith(args)` — it fails the test if the function wasn't called
+- `coJustRun { useCase(any()) }` is the suspend equivalent of `jest.fn()` — replaces the function with a no-op so the test doesn't throw when it's called
+
+### What I Struggled With
+
+### Forgetting to mock new collaborators in tests
+
+- Adding `checkLineCompletion` to `StationListViewModel` broke the `ToggleStation` test because MockK had no behaviour defined for the new use case. Fix was adding `coJustRun { checkLineCompletion(any()) }` to the test setup
+
+### Comparisons to React Native
+
+| Concept                        | React Native                          | Android                                  |
+|--------------------------------|---------------------------------------|------------------------------------------|
+| DB schema versioning           | Migrations in Knex/Sequelize/Prisma   | `Migration(from, to)` in Room            |
+| Merging async streams          | `combineLatest` in RxJS               | `combine` in Flow                        |
+| Point-in-time data fetch       | `await fetch(...)` / async query      | `suspend` DAO query returning `List`     |
+| Interaction assertions         | `expect(fn).toHaveBeenCalledWith()`   | `coVerify { fn(args) }`                  |
+| No-op mock                     | `jest.fn()`                           | `coJustRun { fn(any()) }`                |
+
+#### Key insight
+The split between Flow queries (for UI) and suspend queries (for business logic) mirrors the React pattern of separating subscriptions (`useEffect` + websocket) from one-time fetches (`useEffect` with `fetch`). The key question is always: do I need to react to future changes, or do I just need the answer right now?

@@ -2,6 +2,7 @@ package com.katebeavis.tubespotter.di
 
 import android.content.Context
 import androidx.room.Room
+import com.katebeavis.tubespotter.data.local.dao.AchievementDao
 import com.katebeavis.tubespotter.data.local.dao.LineDao
 import com.katebeavis.tubespotter.data.local.dao.StationDao
 import com.katebeavis.tubespotter.data.local.db.TubeSpotterDatabase
@@ -25,6 +26,7 @@ object DatabaseModule {
             "tubespotter.db",
         )
             .addCallback(TubeSpotterDatabase.seedCallback())
+            .addMigrations(TubeSpotterDatabase.MIGRATION_1_2)
             .build()
 
     @Provides
@@ -32,4 +34,7 @@ object DatabaseModule {
 
     @Provides
     fun provideLineDao(database: TubeSpotterDatabase): LineDao = database.lineDao()
+
+    @Provides
+    fun provideAchievementDao(database: TubeSpotterDatabase): AchievementDao = database.achievementDao()
 }

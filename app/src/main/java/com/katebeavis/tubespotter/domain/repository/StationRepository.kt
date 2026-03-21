@@ -13,4 +13,6 @@ interface StationRepository {
     suspend fun deleteStationPhoto(stationId: Int, uri: String)
 
     fun getStationById(stationId: Int): Flow<Station?>
+    suspend fun getStationsForLineSync(lineId: Int): List<Station>
+    suspend fun getLineIdsForStation(stationId: Int): List<Int>
 }

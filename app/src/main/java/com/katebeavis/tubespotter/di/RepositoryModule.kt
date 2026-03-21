@@ -1,6 +1,8 @@
 package com.katebeavis.tubespotter.di
 
+import com.katebeavis.tubespotter.data.repository.AchievementRepositoryImpl
 import com.katebeavis.tubespotter.data.repository.StationRepositoryImpl
+import com.katebeavis.tubespotter.domain.repository.AchievementRepository
 import com.katebeavis.tubespotter.domain.repository.StationRepository
 import dagger.Binds
 import dagger.Module
@@ -15,4 +17,9 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindStationRepository(impl: StationRepositoryImpl): StationRepository
+    @Binds
+    @Singleton
+    abstract fun bindAchievementRepository(
+        impl: AchievementRepositoryImpl,
+    ): AchievementRepository
 }

@@ -2,6 +2,8 @@ package com.katebeavis.tubespotter.presentation.stationlist.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.katebeavis.tubespotter.data.local.photo.PhotoStorage
+import com.katebeavis.tubespotter.domain.model.Station
+import com.katebeavis.tubespotter.domain.usecase.CheckLineCompletionUseCase
 import com.katebeavis.tubespotter.domain.usecase.DeleteStationPhotoUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetAllLinesUseCase
 import com.katebeavis.tubespotter.domain.usecase.GetAllStationsUseCase
@@ -26,6 +28,7 @@ class StationListViewModel @Inject constructor(
     private val saveStationPhoto: SaveStationPhotoUseCase,
     private val deleteStationPhoto: DeleteStationPhotoUseCase,
     private val photoStorage: PhotoStorage,
+    private val checkLineCompletion: CheckLineCompletionUseCase,
 ) : BaseViewModel<StationListUiState, StationListUiAction, StationListUiSideEffect>(
     initialState = StationListUiState()
 ) {
@@ -78,9 +81,10 @@ class StationListViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun toggleStation(station: com.katebeavis.tubespotter.domain.model.Station) {
+    private fun toggleStation(station: Station) {
         viewModelScope.launch {
             toggleStationVisited(station)
+            checkLineCompletion(station.id)
         }
     }
 

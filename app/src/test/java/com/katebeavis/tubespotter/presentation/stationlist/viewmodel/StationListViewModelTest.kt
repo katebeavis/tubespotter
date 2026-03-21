@@ -8,6 +8,7 @@ import com.katebeavis.tubespotter.domain.usecase.GetStationsByLineUseCase
 import com.katebeavis.tubespotter.domain.usecase.ToggleStationVisitedUseCase
 import com.google.common.truth.Truth.assertThat
 import com.katebeavis.tubespotter.data.local.photo.PhotoStorage
+import com.katebeavis.tubespotter.domain.usecase.CheckLineCompletionUseCase
 import com.katebeavis.tubespotter.domain.usecase.DeleteStationPhotoUseCase
 import com.katebeavis.tubespotter.domain.usecase.SaveStationPhotoUseCase
 import io.mockk.coJustRun
@@ -15,6 +16,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -26,6 +28,7 @@ import org.junit.Test
 
 class StationListViewModelTest {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = UnconfinedTestDispatcher()
     private val getAllStations = mockk<GetAllStationsUseCase>()
     private val getStationsByLine = mockk<GetStationsByLineUseCase>()
@@ -34,6 +37,7 @@ class StationListViewModelTest {
     private val saveStationPhoto = mockk<SaveStationPhotoUseCase>()
     private val deleteStationPhoto = mockk<DeleteStationPhotoUseCase>()
     private val photoStorage = mockk<PhotoStorage>()
+    private val checkLineCompletion = mockk<CheckLineCompletionUseCase>()
 
     private val stations = listOf(
         Station(id = 1, name = "Waterloo", zone = "1", isVisited = false, visitedAt = null),
@@ -50,6 +54,7 @@ class StationListViewModelTest {
         Station(id = 2, name = "Bank", zone = "1", isVisited = false, visitedAt = null),
     )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
@@ -58,6 +63,7 @@ class StationListViewModelTest {
         every { getStationsByLine(any()) } returns flowOf(waterlooAndCityStations)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @After
     fun tearDown() {
         Dispatchers.resetMain()
@@ -96,6 +102,7 @@ class StationListViewModelTest {
     @Test
     fun `ToggleStation action calls use case`() = runTest {
         coJustRun { toggleStationVisited(any()) }
+        coJustRun { checkLineCompletion(any()) }
         val viewModel = buildViewModel()
 
         viewModel.postAction(StationListUiAction.ToggleStation(stations.first()))
@@ -111,5 +118,6 @@ class StationListViewModelTest {
         saveStationPhoto = saveStationPhoto,
         deleteStationPhoto = deleteStationPhoto,
         photoStorage = photoStorage,
+        checkLineCompletion = checkLineCompletion
     )
 }

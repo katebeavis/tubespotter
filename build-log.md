@@ -105,3 +105,31 @@
 
 ### Screenshot
 <img src="./phase-four.jpg" width="300"  alt="phase-four-screenshot"/>
+
+## Phase Five
+
+### Built
+- `AchievementEntity` — Room entity with `id`, `lineId` (nullable for All Stations), `unlockedAt` (nullable)
+- Room migration from version 1 → 2 — `MIGRATION_1_2` creates the `achievements` table without touching existing data
+- `AchievementDao` — `getAllAchievements()` as Flow, `getAchievementByLineId()`, `insertAchievement()` with `OnConflictStrategy.IGNORE`
+- `Achievement` domain model — includes `lineName` (joined at repository level) and computed `isUnlocked` property
+- `AchievementRepository` interface + `AchievementRepositoryImpl` — uses `combine` to join achievements with line names from `LineDao`
+- `GetAchievementsUseCase`, `CheckLineCompletionUseCase`
+- `getStationsForLineSync` — one-shot suspend DAO query (vs Flow) for point-in-time completion checking
+- `getLineIdsForStation` — DAO query returning line IDs for a given station, used by `CheckLineCompletionUseCase`
+- `CheckLineCompletionUseCase` — takes `stationId`, looks up all lines for that station, checks each for full completion, unlocks achievement if newly complete
+- `StationListViewModel` updated to call `checkLineCompletion` after every toggle
+- Full achievements MVI — `AchievementsUiState`, `AchievementsUiAction`, `AchievementsUiSideEffect`, `AchievementsViewModel`, `AchievementsScreen`
+- `AchievementsScreen` wired into `TubeSpotterScaffold`, replacing placeholder
+
+### Android concepts covered
+- Room migrations — why bumping the version without a migration crashes, and how `Migration(from, to)` lets you upgrade schema without losing user data
+- `OnConflictStrategy.IGNORE` — idempotent inserts; calling `insertAchievement` twice for the same achievement is safe
+- `combine` Flow operator — merging two live streams (achievements + lines) into a single derived stream; reacts when either source changes
+- One-shot suspend queries vs Flow queries — when you need a snapshot for business logic rather than a live stream for UI
+- Business logic in the domain layer — `CheckLineCompletionUseCase` owns the completion rules; the ViewModel just calls it
+- Interaction-based testing with `coVerify` — asserting a collaborator was called with the right arguments, vs state-based assertions with `assertThat`
+- `coJustRun` — MockK's way of no-oping a suspend function that would otherwise throw when called on a mock
+
+### Screenshot
+<img src="./phase-five.jpg" width="300"  alt="phase-five-screenshot"/>

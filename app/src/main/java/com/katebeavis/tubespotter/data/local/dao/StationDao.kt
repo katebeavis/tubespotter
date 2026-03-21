@@ -28,4 +28,7 @@ interface StationDao {
 
     @Query("UPDATE stations SET photoUri = NULL WHERE id = :stationId")
     suspend fun clearPhotoUri(stationId: Int)
+
+    @Query("SELECT * FROM stations WHERE id = :stationId")
+    fun getStationById(stationId: Int): Flow<StationEntity?>
 }

@@ -46,6 +46,9 @@ class StationRepositoryImpl @Inject constructor(
         stationDao.clearPhotoUri(stationId)
     }
 
+    override fun getStationById(stationId: Int): Flow<Station?> =
+        stationDao.getStationById(stationId).map { it?.toDomain() }
+
     private fun StationEntity.toDomain() = Station(
         id = id,
         name = name,

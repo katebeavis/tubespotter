@@ -1,6 +1,5 @@
 package com.katebeavis.tubespotter.presentation.stationlist
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -28,9 +27,11 @@ import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationList
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListUiSideEffect
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListUiState
 import com.katebeavis.tubespotter.presentation.stationlist.viewmodel.StationListViewModel
+import androidx.core.net.toUri
 
 @Composable
 fun StationListScreen(
+    onNavigateToDetail: (Int) -> Unit,
     viewModel: StationListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,13 +57,14 @@ fun StationListScreen(
                     viewModel.postAction(
                         StationListUiAction.StorePendingPhoto(effect.stationId, effect.uri)
                     )
-                    cameraLauncher.launch(Uri.parse(effect.uri))
+                    cameraLauncher.launch(effect.uri.toUri())
                 }
                 is StationListUiSideEffect.ShowDeleteConfirmation -> {
                     viewModel.postAction(
                         StationListUiAction.DeletePhotoConfirmed(effect.stationId, effect.uri)
                     )
                 }
+                is StationListUiSideEffect.NavigateToDetail -> onNavigateToDetail(effect.stationId)
             }
         }
     }
@@ -75,7 +77,8 @@ fun StationListScreen(
         onLineSelected = { viewModel.postAction(StationListUiAction.SelectLine(it)) },
         onClearFilter = { viewModel.postAction(StationListUiAction.ClearFilter) },
         onTakePhoto = { viewModel.postAction(StationListUiAction.TakePhoto(it)) },
-        onDeletePhoto = { stationId, uri -> viewModel.postAction(StationListUiAction.DeletePhoto(stationId, uri)) }
+        onDeletePhoto = { stationId, uri -> viewModel.postAction(StationListUiAction.DeletePhoto(stationId, uri)) },
+        onSelectStation = { viewModel.postAction(StationListUiAction.SelectStation(it)) }
     )
 }
 
@@ -88,6 +91,7 @@ fun StationListScreen(
             onClearFilter: () -> Unit,
             onTakePhoto: (Int) -> Unit,
             onDeletePhoto: (Int, String) -> Unit,
+            onSelectStation: (Int) -> Unit,
         ) {
             Scaffold(
                 topBar = {
@@ -121,6 +125,7 @@ fun StationListScreen(
                                 onToggle = onToggleStation,
                                 onTakePhoto = onTakePhoto,
                                 onDeletePhoto = onDeletePhoto,
+                                onSelectStation = onSelectStation,
                             )
                         }
                     }

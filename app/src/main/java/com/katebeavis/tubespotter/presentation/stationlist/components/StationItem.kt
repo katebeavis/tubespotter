@@ -1,5 +1,6 @@
 package com.katebeavis.tubespotter.presentation.stationlist.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,10 +27,12 @@ fun StationItem(
     onTakePhoto: (Int) -> Unit,
     onDeletePhoto: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
+    onSelectStation: (Int) -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable { onSelectStation(station.id) }
             .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

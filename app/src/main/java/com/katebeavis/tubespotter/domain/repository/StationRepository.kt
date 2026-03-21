@@ -11,4 +11,6 @@ interface StationRepository {
     suspend fun toggleStationVisited(station: Station)
     suspend fun saveStationPhoto(stationId: Int, uri: String)
     suspend fun deleteStationPhoto(stationId: Int, uri: String)
+
+    fun getStationById(stationId: Int): Flow<Station?>
 }

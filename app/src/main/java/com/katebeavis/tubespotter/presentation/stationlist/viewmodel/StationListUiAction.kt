@@ -12,4 +12,5 @@ sealed interface StationListUiAction : UiAction {
     data class DeletePhoto(val stationId: Int, val uri: String) : StationListUiAction
     data class DeletePhotoConfirmed(val stationId: Int, val uri: String) : StationListUiAction
     data class StorePendingPhoto(val stationId: Int, val uri: String) : StationListUiAction
+    data class SelectStation(val stationId: Int) : StationListUiAction
 }

@@ -47,6 +47,9 @@ class StationListViewModel @Inject constructor(
             is StationListUiAction.StorePendingPhoto -> updateState {
                 copy(pendingPhotoStationId = action.stationId, pendingPhotoUri = action.uri)
             }
+            is StationListUiAction.SelectStation -> viewModelScope.launch {
+                postSideEffect(StationListUiSideEffect.NavigateToDetail(action.stationId))
+            }
         }
     }
 

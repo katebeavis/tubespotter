@@ -216,3 +216,72 @@ The side effect pattern solves the same problem as React's `useEffect` with exte
 
 #### Key insight
 `FileProvider` has no direct React Native equivalent because RN abstracts away Android's inter-app permission model. Understanding it gives you a clearer mental model of why mobile file sharing works the way it does — every cross-app file access is an explicit, scoped, temporary grant.
+
+## Phase 4: Station Detail Screen & Navigation
+
+### What I Learned
+
+### Navigation 3
+
+- Navigation 3 replaces `NavHost` + `NavController` with `NavDisplay` + `NavBackStack`. The back stack is a `SnapshotStateList<NavKey>` — a plain observable list. Navigating forward is `backStack.add(route)`, going back is `backStack.removeLastOrNull()`
+- Routes are `@Serializable` data classes or objects implementing `NavKey`. Type-safe navigation means the compiler enforces that all required arguments are present — no more string routes or `bundleOf()` argument passing
+- `@Serializable` comes from Kotlinx Serialization, not Navigation itself. Navigation 3 leverages it so route objects can be serialised to disk and restored after process death — when Android kills your background process and the user returns, the back stack is rebuilt from the saved state
+- Process death is not a crash. Android silently kills background apps to free memory. The user sees no error — they just expect to land back where they were when they return. Navigation needs to survive this
+
+### sealed interface for UiState
+
+- The list screen uses a `data class` for UiState because it always has data (pre-seeded). The detail screen uses a `sealed interface` because it has two genuinely different states: `Loading` (before the database query returns) and `Content` (data available)
+- Using a sealed interface forces the UI to explicitly handle both states — the compiler won't let you pattern match partially. This eliminates the class of bugs where you render content before it exists
+
+### Assisted injection
+
+- Hilt's normal `@HiltViewModel` wires dependencies at compile time. But `stationId` only exists at runtime — the moment the user taps a row. Assisted injection is the escape hatch: Hilt handles everything it can figure out itself (use cases, repositories), and you pass the runtime value at creation time
+- `@HiltViewModel(assistedFactory = ...)` + `@AssistedInject` constructor + `@AssistedFactory` interface is the full pattern. The screen calls `hiltViewModel<VM, VM.Factory>(creationCallback = { factory -> factory.create(stationId) })`
+- Without assisted injection, the alternative would be passing `stationId` into the ViewModel after creation via a method call — less safe, not idiomatic
+
+### ViewModel caching and the key parameter
+
+- `hiltViewModel()` caches ViewModels in the `ViewModelStore` of the current owner. Without a unique key, every call to `hiltViewModel<StationDetailViewModel>()` returns the same instance — whichever was created first. This caused every station to show Baker Street's data
+- Passing `key = stationId.toString()` creates a distinct ViewModel per station. The key is just a string that scopes the cache entry
+
+### init block
+
+- `init { }` runs immediately when the class is instantiated — equivalent to `useEffect(() => { ... }, [])` in React Native (runs once on mount). Used here to start observing the station flow as soon as the ViewModel is created
+
+### by keyword (Kotlin delegation)
+
+- `by` delegates property access to another object. `val text by remember { mutableStateOf("") }` delegates `text` get/set to the `MutableState` object — reading `text` calls `state.value`, writing `text = "x"` calls `state.value = "x"`. Without `by` you'd write `text.value` everywhere
+- Common delegation patterns: `by viewModels()` (lazy ViewModel fetch), `by lazy { }` (lazy initialisation), `by remember { mutableStateOf(...) }` (Compose state)
+
+### collectAsStateWithLifecycle
+
+- Converts a `Flow` or `StateFlow` into Compose `State`, but stops collecting when the app goes into the background and resumes when it returns. Avoids unnecessary recompositions while the UI is invisible
+- Requires the `lifecycle-compose` library because it hooks into the Android lifecycle — a platform concern that doesn't exist in core Compose
+
+### What I Struggled With
+
+### SavedStateHandle doesn't work the same in Navigation 3
+
+- Navigation 2 automatically populated `SavedStateHandle` with route arguments. Navigation 3 does not — extracting `stationId` from `SavedStateHandle` crashed at runtime with `Required value was null`. The fix was assisted injection, which passes the value directly at ViewModel creation time rather than reading it from the handle
+
+### ViewModel file placement
+
+- Files were created in `stationlist/viewmodel/` instead of `stationdetail/viewmodel/`. Kotlin doesn't enforce that file paths match package declarations (unlike Java), so it compiled with the wrong package names. Fixed via Refactor → Move in Android Studio
+
+### Comparisons to React Native
+
+| Concept                     | React Native                           | Android                                              |
+|-----------------------------|----------------------------------------|------------------------------------------------------|
+| Navigation stack            | React Navigation `NavigationContainer` | `NavBackStack` + `NavDisplay`                        |
+| Route definitions           | String names or screen components      | `@Serializable` data classes                         |
+| Passing nav arguments       | `navigation.navigate('Detail', {id})`  | Type-safe route constructor `StationDetailRoute(id)` |
+| Screen state shapes         | Union types / discriminated unions     | `sealed interface` UiState                           |
+| Component lifecycle (mount) | `useEffect(() => {}, [])`              | `init { }` in ViewModel                              |
+| Subscribing to state        | `useSelector`, `useContext`            | `collectAsStateWithLifecycle()`                      |
+| Runtime DI arguments        | Props passed down                      | Assisted injection                                   |
+
+#### Key insight
+Navigation 3's explicit back stack (`backStack.add()`, `backStack.removeLastOrNull()`) is more transparent than React Navigation's imperative `navigate()` — you can see and reason about exactly what's in the stack at any point. It trades some magic for clarity.
+
+#### Key insight
+Assisted injection solves the same problem as passing props to a React component — giving a piece of UI the context-specific data it needs. The difference is that in Android, the ViewModel is created by a framework (Hilt), not by you, so you need a formal mechanism to inject runtime values into that process.

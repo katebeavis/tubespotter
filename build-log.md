@@ -79,3 +79,29 @@
 
 ### Screenshot
 <img src="./phase-three.jpg" width="300"  alt="phase-three-screenshot"/>
+
+## Phase Four
+
+### Built
+- Navigation 3 (`NavDisplay`, `NavBackStack`) with `@Serializable` type-safe route objects
+- `Routes.kt` — `StationListRoute`, `StationDetailRoute(stationId)`, `AchievementsRoute` implementing `NavKey`
+- `TubeSpotterScaffold` — Material 3 `Scaffold` with `NavigationBar` bottom nav shell; bar hidden on detail screen
+- `TopLevelDestination` enum — defines Stations and Achievements tabs with icons and routes
+- `StationDetailScreen` with full MVI: `StationDetailUiState` (sealed interface), `StationDetailUiAction`, `StationDetailUiSideEffect`, `StationDetailViewModel`
+- `GetStationDetailUseCase` + `getStationById` DAO query
+- Assisted injection for `StationDetailViewModel` — `stationId` passed at ViewModel creation time via `@AssistedInject` and `@HiltViewModel(assistedFactory = ...)`
+- Per-station ViewModel keying via `hiltViewModel(key = stationId.toString())` to prevent stale instance reuse
+- Back navigation via `GoBack` side effect — ViewModel signals, Screen pops the back stack
+- `clickable` on `StationItem` row to trigger `SelectStation` action → `NavigateToDetail` side effect
+
+### Android concepts covered
+- Navigation 3 API — `NavBackStack` as a `SnapshotStateList`, `NavDisplay`, `entryProvider` DSL, and why each entry has its own `ViewModelStoreOwner`
+- `@Serializable` route objects — type-safe navigation arguments replacing string-based routes; why `@Serializable` enables process death restoration
+- `NavKey` marker interface — what Navigation 3 requires to accept a class as a valid back stack destination
+- `sealed interface` for UiState — models Loading/Content states for screens that load a single entity, vs `data class` for screens that always have data
+- Assisted injection — how to pass runtime values (unknown at compile time) to a `@HiltViewModel`; when Hilt's normal compile-time wiring isn't sufficient
+- ViewModel caching — why `hiltViewModel()` returns the same instance without a unique `key`, and how `key` creates distinct instances per destination
+- Process death — how Android silently kills background processes and why `@Serializable` routes enable transparent restoration of the back stack
+
+### Screenshot
+<img src="./phase-four.jpg" width="300"  alt="phase-four-screenshot"/>
